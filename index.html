@@ -135,6 +135,13 @@ nav button.on{color:var(--acid)}
 .callegend{display:flex;flex-wrap:wrap;gap:8px 12px;margin:16px 2px 6px}
 .callegend span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--dim);font-weight:700}
 .callegend i{width:9px;height:9px;border-radius:99px}
+.volrow{display:flex;align-items:center;gap:9px;padding:7px 2px}
+.volrow .vc{width:9px;height:9px;border-radius:99px;flex:none}
+.volrow .vn{width:30px;font-size:13px;font-weight:700;flex:none}
+.volrow .vbar{flex:1;height:7px;background:var(--surf2);border-radius:99px;overflow:hidden}
+.volrow .vbar i{display:block;height:100%;border-radius:99px}
+.volrow .vv{width:24px;text-align:right;font-size:14px;font-weight:600}
+.volrow .vz{width:62px;text-align:right;font-size:11px;font-weight:700}
 
 /* program */
 .progday{background:var(--surf);border:1px solid var(--line);border-radius:15px;padding:12px 13px;margin-bottom:11px}
@@ -158,6 +165,10 @@ nav button.on{color:var(--acid)}
 .rmtable th{color:var(--dim);font-size:11px;font-weight:700}
 .rmtable td b{color:var(--acid)}
 .hint{font-size:12px;color:var(--dim);line-height:1.6;margin-top:10px}
+.thy h4{font-size:13px;color:var(--acid);margin:14px 0 5px}
+.thy h4:first-child{margin-top:0}
+.thy p{font-size:13px;color:var(--txt);line-height:1.7;margin-bottom:4px}
+.thy b{color:var(--txt)}
 
 /* sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;opacity:0;pointer-events:none;transition:.2s}
@@ -278,23 +289,34 @@ function saveStore(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
 
 const CATS=["胸","肩","腕","背","脚","腹","有酸素"];
 const CATCOLOR={"胸":"var(--chest)","肩":"var(--shoulder)","腕":"var(--arm)","背":"var(--back)","脚":"var(--leg)","腹":"var(--abs)","有酸素":"var(--cardio)"};
-const SEED=[
- ["ベンチプレス","胸"],["インクラインダンベルプレス","胸"],["ダンベルフライ","胸"],["チェストプレス","胸"],
- ["ショルダープレス","肩"],["サイドレイズ","肩"],["リアレイズ","肩"],
- ["バイセップスカール マシン","腕"],["ハンマーカール","腕"],["ケーブルプルオーバー","腕"],["トライセプスプレスダウン","腕"],
- ["ラットプルダウン","背"],["アシストチンニング","背"],["シーテッドロウ","背"],["ハイ・ロー","背"],
- ["スクワット","脚"],["レッグプレス","脚"],["レッグエクステンション","脚"],["レッグカール","脚"],
- ["アブドミナル","腹"],["ハンギングレッグレイズ","腹"],
- ["トレッドミル","有酸素"],["バイク","有酸素"]
+const MASTER=[
+ // 胸
+ ["インクラインダンベルフライ","胸"],["インクラインダンベルプレス","胸"],["インクラインチェストプレス FIT","胸"],["インクラインプレス ハンマー","胸"],["インクラインベンチ スミスマシン","胸"],["インクラインベンチプレス","胸"],["シーテッドチェストプレス FIT","胸"],["ダンベルフライ","胸"],["ダンベルプレス","胸"],["チェストプレス WE","胸"],["チェストプレス AF","胸"],["チェストプレス FIT","胸"],["ベンチプレス","胸"],["ベンチプレス フォーム練習","胸"],["ベンチプレス 軽め","胸"],["ベンチプレス 重め","胸"],["ベンチプレス ボリューム","胸"],["ペクトラルフライ AF","胸"],["ペクトラルフライ We","胸"],["ペックデック","胸"],["ペックフライ フィットプレイス","胸"],["ホリゾンタル ベンチプレス","胸"],["リバースグリップベンチプレス スミス","胸"],
+ // 肩
+ ["ケーブルロープフェイスプル","肩"],["ケーブルロープフェイスプルサイド","肩"],["ケーブル・ビハインド・サイドレイズ","肩"],["サイドレイズ","肩"],["ショルダープレス FIT","肩"],["ショルダープレス AF","肩"],["ダンベルアップライトロー インクライン","肩"],["ダンベルショルダープレス","肩"],["ハンマー ショルダープレスマシン We","肩"],["ミリタリープレス","肩"],["ライイングリアレイズ","肩"],["ラテラルレイズマシン","肩"],["リアデルトイド","肩"],
+ // 腕
+ ["EZバー カール","腕"],["JMプレス スミスマシン","腕"],["インクラインダンベルカール","腕"],["インクラインハンマーカール","腕"],["ケーブル ロープエクステンション","腕"],["ケーブルオーバーヘッドエクステンション","腕"],["ケーブルカール","腕"],["ケーブルトライセップスプッシュダウン ロープ","腕"],["ケーブルトライセップスプレスダウン","腕"],["ケーブルハンマーカール","腕"],["ケーブルリストカール","腕"],["ダンベル オーバーヘッドエクステンション","腕"],["ダンベルカール","腕"],["ダンベルリストカール","腕"],["トライセップスエクステンションマシン","腕"],["ナロウベンチプレス","腕"],["ハンマーカール","腕"],["バイセップスカール マシン","腕"],["バーベルカール","腕"],["ライイングエクステンション","腕"],["ライイングエクステンション ダンベル","腕"],["リバースダンベルリストカール","腕"],["ワンハンドケーブルロープエクステンション","腕"],
+ // 背
+ ["D.Yロー","背"],["Tバーロー","背"],["アシストチンニング We","背"],["ケーブルプルオーバー","背"],["ケーブルプルオーバー バー","背"],["ケーブルローイング インクラインベンチ","背"],["シーテッドローイング FIT","背"],["デッドリフト","背"],["ハイ・ロー We","背"],["ハイ・ロー プルオーバー","背"],["ハンマー ロー We","背"],["ベントオーバーロー","背"],["ラットプルダウン AF","背"],["ラットプルダウン FIT","背"],["ラットプルダウン We","背"],["ラットプルダウン We MAG ワイド","背"],["ラテラルワイドプルダウン","背"],["ロウロー We","背"],["ロー AF","背"],["ロー We","背"],["ロー シーテッドプーリー We","背"],
+ // 脚
+ ["カーフレイズ 45°","脚"],["シーテッドレッグカール AF","脚"],["シーテッドレッグカール FIT","脚"],["シーテッドレッグプレス We","脚"],["シーテッドレッグプレス 片足 FIT","脚"],["スクワット","脚"],["スクワット 軽め","脚"],["スクワット 重め","脚"],["スタンディングカーフマシン","脚"],["スミスマシンスクワット FIT","脚"],["ハックスクワットマシン We","脚"],["ルーマニアンデッドリフト","脚"],["レッグエクステンション AF","脚"],["レッグエクステンション AF 江古田","脚"],["レッグエクステンション FIT","脚"],["レッグエクステンション We","脚"],["レッグカール AF","脚"],["レッグカール AF 江古田","脚"],["レッグカール We","脚"],["レッグプレス 45度 FIT","脚"],["レッグプレス 45度 ハンマー","脚"],
+ // 腹
+ ["アブドミナル AF","腹"],["アブドミナル We","腹"],["アブドミナルクランチ We","腹"],["クランチ","腹"],["ハンギングレッグレイズ","腹"]
 ];
 
 let S=loadStore();
-if(!S){
-  S={exercises:[],sessions:{},program:{},settings:{}};
-  SEED.forEach((e,i)=>S.exercises.push({id:"x"+i+"_"+Date.now(),name:e[0],cat:e[1]}));
-}
-S.program=S.program||{};
-S.settings=Object.assign({targetRpe:8,targetReps:8,roundTo:2.5,apiKey:"",model:"claude-sonnet-4-6",goal:"筋肥大",level:"中級者",profileNotes:""},S.settings||{});
+if(!S)S={exercises:[],sessions:{},program:{},settings:{}};
+S.program=S.program||{};S.exercises=S.exercises||[];
+S.settings=Object.assign({targetRpe:8,targetReps:8,roundTo:2.5,goal:"筋肥大",level:"中級者",profileNotes:""},S.settings||{});
+// 種目ライブラリをMASTERに同期（同名種目はexId・履歴を保持、画像に無い旧種目は除去）
+(function syncLibrary(){
+  if(S.exLibVersion===3)return;
+  const byKey={};(S.exercises||[]).forEach(e=>{byKey[e.cat+"|"+e.name]=e.id;});
+  const used={};const newEx=MASTER.map((m,i)=>{const k=m[1]+"|"+m[0];const id=byKey[k]||("x"+i+"_"+Date.now());used[id]=1;return {id,name:m[0],cat:m[1]};});
+  const valid=new Set(newEx.map(e=>e.id));
+  Object.keys(S.program).forEach(k=>{if(S.program[k]&&S.program[k].ex)S.program[k].ex=S.program[k].ex.filter(id=>valid.has(id));});
+  S.exercises=newEx;S.exLibVersion=3;
+})();
 saveStore();
 
 /* RPE/%1RM chart */
@@ -355,6 +377,15 @@ function addExerciseToDay(exId){
   saveStore();
 }
 function bestE1rm(exId){let best=0;Object.values(S.sessions).forEach(day=>day.forEach(en=>{if(en.exId!==exId)return;en.sets.forEach(s=>{if(!s.w||!s.r||s.rpe==="")return;const e=e1rm(+s.w,+s.r,+s.rpe);if(e>best)best=e;});}));return best;}
+function prevBestE1rm(exId){const cur=ymd(curDate);let best=0;Object.keys(S.sessions).forEach(d=>{if(d>=cur)return;S.sessions[d].forEach(en=>{if(en.exId!==exId)return;en.sets.forEach(s=>{if(!s.w||!s.r||s.rpe==="")return;const e=e1rm(+s.w,+s.r,+s.rpe);if(e>best)best=e;});});});return best;}
+// 今週(月〜日)の部位別 実施セット数
+function weekRange(){const t=new Date();const dow=(t.getDay()+6)%7;const mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-dow);const sun=new Date(mon);sun.setDate(mon.getDate()+6);return [ymd(mon),ymd(sun)];}
+function weeklySetsByCat(){const r=weekRange();const out={};CATS.forEach(c=>out[c]=0);Object.keys(S.sessions).forEach(d=>{if(d>=r[0]&&d<=r[1])S.sessions[d].forEach(en=>{en.sets.forEach(s=>{if(s.w&&s.r)out[en.cat]=(out[en.cat]||0)+1;});});});return out;}
+function volZone(n){if(n===0)return{t:"未実施",col:"var(--dim2)"};if(n<5)return{t:"低",col:"var(--dim)"};if(n<10)return{t:"低〜中",col:"var(--dim)"};if(n<15)return{t:"標準",col:"var(--abs)"};if(n<20)return{t:"ハイ寄り",col:"var(--shoulder)"};if(n<25)return{t:"ハイ",col:"var(--chest)"};return{t:"多すぎ注意",col:"var(--chest)"};}
+function isStrength(){return S.settings.goal==="筋力アップ";}
+function theoryLine(){return isStrength()
+  ? "[理論] 筋力重視: 低回数(1〜5)・高%1RM・RPE6〜9中心・毎回限界にしない・技術/神経適応・小刻みな重量増で漸進。"
+  : "[理論] 筋肥大重視: 週10〜20セット/部位・RIR1〜3(RPE7〜9)・6〜15回・ダブルプログレッション(まず回数→上限で重量)・重量以外(回数/可動域/RPE低下)も進歩。";}
 
 /* ---------- render ---------- */
 let tab="log";
@@ -424,28 +455,39 @@ function coachFor(en){
   const hasAny=en.sets.some(s=>s.w&&s.r);
   if(idx<0){
     if(!hasAny)return {html:""};
-    return {html:`<div class="coach"><div class="ttl">COACH ／ RM換算表ベース</div><div class="msg">RPEを入れると、RM換算表をもとに次セットを提案します。<b>ウォームアップのセットはRPE不要</b>（空欄のままでOK）。</div></div>`};
+    return {html:`<div class="coach"><div class="ttl">COACH ／ ${isStrength()?'筋力':'筋肥大'}モード</div><div class="msg">RPEを入れると、目標（${esc(S.settings.goal)}）と理論に沿って次セットを提案します。<b>ウォームアップのセットはRPE不要</b>（空欄でOK）。</div></div>`};
   }
   const s=en.sets[idx];const w=+s.w,r=+s.r,rpe=+s.rpe;
-  const e=e1rm(w,r,rpe);const tE=S.settings.targetRpe;
-  const recSame=recWeight(e,r,tE);
+  const e=e1rm(w,r,rpe);const tE=S.settings.targetRpe,tR=S.settings.targetReps,step=S.settings.roundTo;
+  const recSame=recWeight(e,r,tE);const diff=clampRpe(rpe)-tE;
   let msg="";
-  const diff=clampRpe(rpe)-tE;
-  if(Math.abs(diff)<0.6)msg=`今の<b>RPE${fmt(rpe)}</b>は目標どおり。次も<b>${fmt(w)}kg × ${r}回</b>を維持、余裕あれば+${fmt(S.settings.roundTo)}kg。`;
-  else if(diff<0)msg=`<b>RPE${fmt(rpe)}</b>はまだ余裕あり（目標${tE}）。次は<b>${fmt(recSame)}kg × ${r}回</b>が目安。`;
-  else msg=`<b>RPE${fmt(rpe)}</b>は目標(${tE})より高め＝疲労気味。次は<b>${fmt(recSame)}kg × ${r}回</b>に落として質を保ちましょう。`;
-  const ctx={name:en.name,setNo:idx+1,w,r,rpe,e1rm:e,exId:en.exId};
-  return {html:`<div class="coach"><div class="ttl">COACH ／ RM換算表ベース（推定1RM ${fmt(e)}kg）</div><div class="msg">${msg}</div>
+  if(isStrength()){
+    if(diff<=-1)msg=`<b>RPE${fmt(rpe)}</b>＝余力あり。筋力狙いなら次は<b>+${fmt(step)}kg</b>（${r}回維持）。限界(RPE10)は避け、技術と出力を優先。`;
+    else if(diff>=1)msg=`<b>RPE${fmt(rpe)}</b>は高め。重量維持か軽く下げてフォーム・バー速度を優先。毎回限界にしない方が長期的に伸びます。`;
+    else msg=`<b>RPE${fmt(rpe)}</b>は目標どおり。<b>${fmt(w)}kg×${r}回</b>を維持し、慣れたら+${fmt(step)}kg。低回数・高%1RMで神経適応を積む局面。`;
+  }else{
+    const repTop=Math.min(15,Math.max(tR+3,tR+1));
+    if(r>=repTop&&diff<=0.5)msg=`上限<b>${repTop}回</b>到達＆余力あり。<b>ダブルプログレッション</b>で次は<b>+${fmt(step)}kg</b>に上げ、${tR}回から再スタート。`;
+    else if(diff<=-1)msg=`<b>RPE${fmt(rpe)}</b>＝まだ余裕（目標${tE}/RIR${fmt(10-tE)}）。同重量で<b>回数を+1〜2</b>、または<b>${fmt(recSame)}kg</b>へ。`;
+    else if(diff>=1)msg=`<b>RPE${fmt(rpe)}</b>は目標より高強度＝疲労気味。重量維持か<b>${fmt(recSame)}kg</b>に下げ、6〜15回・RIR1〜3で刺激の質を優先。`;
+    else msg=`<b>RPE${fmt(rpe)}</b>は良い刺激（RIR${fmt(10-clampRpe(rpe))}）。次は同重量で<b>1回でも多く</b>、上限${repTop}回に届いたら増量。`;
+  }
+  const pb=prevBestE1rm(en.exId);
+  const prog=(pb>0&&e>pb+0.4)?` <span style="color:var(--abs);font-family:var(--jp);font-weight:700">▲前回より向上</span>`:"";
+  const ctx={name:en.name,setNo:idx+1,w,r,rpe,e1rm:e,exId:en.exId,cat:en.cat};
+  return {html:`<div class="coach"><div class="ttl">COACH ／ ${isStrength()?'筋力':'筋肥大'}モード（推定1RM ${fmt(e)}kg）${prog}</div><div class="msg">${msg}</div>
     <div class="acts"><button class="btn-copy" style="flex:1" onclick='copyCtx(${jenc(ctx)})'>📋 記録をコピー（AIアプリに貼って相談）</button></div></div>`};
 }
 
 /* premise + context */
 function premiseLine(){const st=S.settings;return `目標:${st.goal} / レベル:${st.level}`+(st.profileNotes?` / 補足:${st.profileNotes}`:"");}
 function ctxText(c){
-  const last=lastEntry(c.exId);
-  let p=`[前提] ${premiseLine()}\n【種目】${c.name}（${c.setNo}セット目）\n今回: ${fmt(c.w)}kg × ${c.r}回${c.rpe!=null?` @ RPE${fmt(c.rpe)}`:""}（推定1RM 約${fmt(c.e1rm)}kg）`;
+  const last=lastEntry(c.exId);const wk=weeklySetsByCat();
+  let p=`[前提] ${premiseLine()}\n${theoryLine()}`;
+  if(c.cat)p+=`\n今週の${c.cat}ボリューム: ${wk[c.cat]||0}セット（筋肥大目安 週10〜20）`;
+  p+=`\n【種目】${c.name}（${c.setNo}セット目）\n今回: ${fmt(c.w)}kg × ${c.r}回${c.rpe!=null?` @ RPE${fmt(c.rpe)}`:""}（推定1RM 約${fmt(c.e1rm)}kg）`;
   if(last){const t=last.entry.sets.filter(s=>s.w&&s.r).map(s=>`${fmt(+s.w)}×${s.r}${s.rpe?'@'+fmt(+s.rpe):''}`).join(", ");if(t)p+=`\n前回(${last.daysAgo}日前): ${t}`;}
-  p+=`\n目標設定: RPE${S.settings.targetRpe}/${S.settings.targetReps}回・${S.settings.roundTo}kg刻み\n\n次セットの重量と回数を提案してください。`;
+  p+=`\n目標設定: RPE${S.settings.targetRpe}/${S.settings.targetReps}回・${S.settings.roundTo}kg刻み\n\n上記の理論と数値を踏まえ、次セットの重量と回数を提案してください。`;
   return p;
 }
 function copyCtx(c){const t=ctxText(c);const done=()=>toast("記録をコピーしました");if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));else fallbackCopy(t,done);}
@@ -537,6 +579,10 @@ function renderCal(){
   h+=`</div>`;
   h+=`<div class="callegend">`+CATS.map(c=>`<span><i style="background:${CATCOLOR[c]}"></i>${c}</span>`).join("")+`</div>`;
   h+=`<div class="ivstrip" style="margin-top:6px">`+CATS.map(c=>{const ld=lastCatDate(c);if(!ld)return"";const ago=daysAgo(ld,new Date());return `<div class="ivchip ${ago<=1?'fresh':''}"><span class="dot" style="background:${CATCOLOR[c]}"></span>${c}<span class="d">${ago===0?'今日':ago+'日前'}</span></div>`;}).join("")+`</div>`;
+  // 今週の部位別ボリューム
+  const wk=weeklySetsByCat();
+  h+=`<div style="font-size:12px;color:var(--dim);font-weight:700;margin:18px 2px 8px">今週の部位別ボリューム（実施セット数 ／ 筋肥大の目安 週10〜20）</div>`;
+  CATS.filter(c=>c!=="有酸素").forEach(c=>{const n=wk[c]||0;const z=volZone(n);h+=`<div class="volrow"><span class="vc" style="background:${CATCOLOR[c]}"></span><span class="vn">${c}</span><div class="vbar"><i style="width:${Math.min(100,n/20*100)}%;background:${CATCOLOR[c]}"></i></div><span class="vv num">${n}</span><span class="vz" style="color:${z.col}">${z.t}</span></div>`;});
   main.innerHTML=h;
 }
 function shiftMonth(n){monthCursor.setMonth(monthCursor.getMonth()+n);render();}
@@ -588,7 +634,7 @@ function renderEx(){
   let h=`<div class="cats">`+CATS.map(c=>`<button class="${c===exCat?'on':''}" style="${c===exCat?'background:'+CATCOLOR[c]+';border-color:'+CATCOLOR[c]:''}" onclick="setCat('${c}')">${c}</button>`).join("")+`</div>`;
   const list=S.exercises.filter(e=>e.cat===exCat).sort((a,b)=>a.name.localeCompare(b.name,"ja"));
   if(list.length===0)h+=`<div class="empty-day" style="padding-top:20px">この部位の種目がありません</div>`;
-  list.forEach(e=>{const b=bestE1rm(e.id);h+=`<div class="exrow"><div class="bar" style="background:${CATCOLOR[e.cat]}"></div><div class="nm">${esc(e.name)}</div>${b?`<div class="pr">1RM ${fmt(b)}kg</div>`:''}<button class="add" onclick="addToTodayFromEx('${e.id}')">＋</button><button class="del" onclick="delExercise('${e.id}')">🗑</button></div>`;});
+  list.forEach(e=>{const b=bestE1rm(e.id);h+=`<div class="exrow"><div class="bar" style="background:${CATCOLOR[e.cat]}"></div><div class="nm" onclick="openEditExercise('${e.id}')">${esc(e.name)} <span style="color:var(--dim2);font-size:13px">✎</span></div>${b?`<div class="pr">1RM ${fmt(b)}kg</div>`:''}<button class="add" onclick="addToTodayFromEx('${e.id}')">＋</button><button class="del" onclick="delExercise('${e.id}')">🗑</button></div>`;});
   h+=`<button class="addex" style="margin-top:16px" onclick="openNewExercise()">＋ 新しい種目を作成</button>`;
   main.innerHTML=h;
 }
@@ -632,6 +678,15 @@ function openNewExercise(){
   sheetBody.querySelectorAll("#neCats button").forEach(b=>b.onclick=()=>{sel=b.dataset.c;sheetBody.querySelectorAll("#neCats button").forEach(x=>{const on=x.dataset.c===sel;x.classList.toggle("on",on);x.style.cssText=on?('background:'+CATCOLOR[sel]+';border-color:'+CATCOLOR[sel]+';color:#0a0c0e'):'';});});
   document.getElementById("neSave").onclick=()=>{const nm=document.getElementById("neName").value.trim();if(!nm){toast("名前を入力してください");return;}S.exercises.push({id:"x"+Date.now(),name:nm,cat:sel});saveStore();exCat=sel;closeSheet();render();toast("種目を作成しました");};
 }
+function openEditExercise(id){
+  const ex=exById(id);if(!ex)return;let sel=ex.cat;
+  openSheet("種目を編集",`<div class="field"><label>種目名</label><input id="edName" value="${esc(ex.name)}"></div><div class="field"><label>部位</label><div class="catpick" id="edCats">${CATS.map(c=>`<button data-c="${c}" class="${c===sel?'on':''}" style="${c===sel?'background:'+CATCOLOR[c]+';border-color:'+CATCOLOR[c]+';color:#0a0c0e':''}">${c}</button>`).join("")}</div></div><button class="primary" id="edSave">保存</button><button class="ghost" id="edDel" style="color:var(--danger);border-color:rgba(255,82,71,.35)">🗑 この種目を削除</button>`);
+  sheetBody.querySelectorAll("#edCats button").forEach(b=>b.onclick=()=>{sel=b.dataset.c;sheetBody.querySelectorAll("#edCats button").forEach(x=>{const on=x.dataset.c===sel;x.classList.toggle("on",on);x.style.cssText=on?('background:'+CATCOLOR[sel]+';border-color:'+CATCOLOR[sel]+';color:#0a0c0e'):'';});});
+  document.getElementById("edSave").onclick=()=>{const nm=document.getElementById("edName").value.trim();if(!nm){toast("名前を入力してください");return;}ex.name=nm;ex.cat=sel;
+    Object.values(S.sessions).forEach(day=>day.forEach(en=>{if(en.exId===id){en.name=nm;en.cat=sel;}}));
+    saveStore();exCat=sel;closeSheet();render();toast("種目を更新しました");};
+  document.getElementById("edDel").onclick=()=>delExercise(id);
+}
 function openConfirm(t,m,onYes){openSheet(t,`<div style="font-size:14px;color:var(--dim);line-height:1.7;margin-bottom:18px">${m}</div><button class="primary" id="cfY" style="background:var(--danger);color:#fff">削除する</button><button class="ghost" onclick="closeSheet()">キャンセル</button>`);document.getElementById("cfY").onclick=onYes;}
 
 /* ---------- settings ---------- */
@@ -640,7 +695,7 @@ function openSettings(){
   const st=S.settings;
   const goals=["筋肥大","筋力アップ","減量・カット","維持・健康"],levels=["初心者","中級者","上級者"];
   const h=`
-  <div class="field"><label>トレーニングの目的（AIに自動で伝わります）</label><div class="segpick" id="seGoal">${goals.map(g=>`<button data-v="${g}" class="${g===st.goal?'on':''}">${g}</button>`).join("")}</div></div>
+  <div class="field"><label>トレーニングの目的（コーチの判断とコピー文に反映）</label><div class="segpick" id="seGoal">${goals.map(g=>`<button data-v="${g}" class="${g===st.goal?'on':''}">${g}</button>`).join("")}</div></div>
   <div class="field"><label>レベル</label><div class="segpick" id="seLevel">${levels.map(g=>`<button data-v="${g}" class="${g===st.level?'on':''}">${g}</button>`).join("")}</div></div>
   <div class="field"><label>補足（任意・けが/弱点/方針など）</label><textarea id="seNotes" placeholder="例: 右肩に違和感あり。脚は週1。">${esc(st.profileNotes||'')}</textarea></div>
   <div style="border-top:1px solid var(--line);margin:6px 0 16px"></div>
@@ -649,7 +704,8 @@ function openSettings(){
   <div class="field"><label>重量の丸め単位 (kg)</label><select id="seRound">${[0.5,1,1.25,2.5,5].map(v=>`<option ${v===st.roundTo?'selected':''}>${v}</option>`).join("")}</select></div>
   <div style="border-top:1px solid var(--line);margin:6px 0 16px"></div>
   <div class="keynote">AIへの相談は、各種目の <span class="lk">「📋記録をコピー」</span> で記録・前回データ・あなたの目標をまとめてコピーし、Claude / ChatGPT / Gemini などお使いのアプリに貼り付けてください。アプリ内のAPI連携は使いません（追加課金なし）。</div>
-  <button class="primary" id="seSave">保存</button>`;
+  <button class="primary" id="seSave">保存</button>
+  <button class="ghost" id="seTheory">📖 コーチの判断基準（理論）を見る</button>`;
   openSheet("設定",h);
   let g=st.goal,lv=st.level;
   sheetBody.querySelectorAll("#seGoal button").forEach(b=>b.onclick=()=>{g=b.dataset.v;sheetBody.querySelectorAll("#seGoal button").forEach(x=>x.classList.toggle("on",x.dataset.v===g));});
@@ -659,6 +715,23 @@ function openSettings(){
     st.targetRpe=parseFloat(document.getElementById("seRpe").value);st.targetReps=parseInt(document.getElementById("seReps").value);st.roundTo=parseFloat(document.getElementById("seRound").value);
     saveStore();closeSheet();render();toast("設定を保存しました");
   };
+  document.getElementById("seTheory").onclick=openTheory;
+}
+function openTheory(){
+  openSheet("コーチの判断基準（理論）",`
+  <div class="thy"><h4>目的でロジックを切替</h4>
+  <p><b>筋肥大モード</b>（筋肥大／減量／維持）：6〜15回・RIR1〜3（RPE7〜9）中心。ダブルプログレッション＝まず同重量で回数を伸ばし、上限回数に届いたら重量を上げて目標回数から再スタート。重量だけでなく回数・可動域・同重量でのRPE低下も「進歩」とみなします。</p>
+  <p><b>筋力モード</b>（筋力アップ）：低回数(1〜5)・高%1RM・RPE6〜9中心。毎回限界(RPE10)にせず、技術と出力・神経適応を重視。伸びは小刻みな重量増で。</p>
+  <h4>次セット提案の根拠</h4>
+  <p>記録(重量×回数×RPE)からRPE/%1RM換算表で推定1RMを算出し、目標RPE・回数に対して重量を逆算します。RPEが目標より低ければ増やす、高ければ抑える方向に調整します。</p>
+  <h4>週間ボリューム（部位別）</h4>
+  <p>筋肥大は「週あたりの部位別セット数」が主指標。目安は1部位 週10〜20セット。15〜20でハイ寄り、20超でハイ、25超は多すぎ注意。カレンダータブに今週の実施セット数を表示します。</p>
+  <h4>低回数・高強度の扱い</h4>
+  <p>RPE9〜10でも1〜3回×数セット（合計レップ少）は「高強度・低ボリューム＝神経系寄り」で、筋肥大ボリュームとは別物として扱います。</p>
+  <h4>注意</h4>
+  <p>高頻度で毎回限界は疲労が蓄積し、重量・フォームが落ちやすい。疲労が抜けないときは頻度より強度かボリュームを下げるのが基本。これらは一般的な目安で、回復・睡眠・食事・年齢等で変わります。</p>
+  </div>
+  <button class="ghost" onclick="openSettings()">← 設定に戻る</button>`);
 }
 
 /* ---------- utils ---------- */
