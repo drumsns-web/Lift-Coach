@@ -241,7 +241,6 @@ nav button.on{color:var(--acid)}
   <header>
     <div class="brand"><b>LIFT<span>·</span>COACH</b></div>
     <div class="hbtns">
-      <button class="iconbtn" id="btnChat">💬</button>
       <button class="iconbtn" id="btnSettings">⚙︎</button>
     </div>
   </header>
@@ -355,7 +354,7 @@ function addExerciseToDay(exId){
   day.push({exId,name:ex.name,cat:ex.cat,sets,memo:""});
   saveStore();
 }
-function bestE1rm(exId){let best=0;Object.values(S.sessions).forEach(day=>day.forEach(en=>{if(en.exId!==exId)return;en.sets.forEach(s=>{const e=e1rm(+s.w,+s.r,+s.rpe||10);if(e>best)best=e;});}));return best;}
+function bestE1rm(exId){let best=0;Object.values(S.sessions).forEach(day=>day.forEach(en=>{if(en.exId!==exId)return;en.sets.forEach(s=>{if(!s.w||!s.r||s.rpe==="")return;const e=e1rm(+s.w,+s.r,+s.rpe);if(e>best)best=e;});}));return best;}
 
 /* ---------- render ---------- */
 let tab="log";
@@ -406,7 +405,7 @@ function cardHTML(en,ei){
       <div class="cell"><span class="lab">回</span><input class="kfield" readonly inputmode="none" data-e="${ei}" data-s="${si}" data-f="r" value="${s.r}" placeholder="${ph?ph.r:'–'}"></div>
       <div class="cell rpe"><span class="lab">RPE</span><input class="kfield" readonly inputmode="none" data-e="${ei}" data-s="${si}" data-f="rpe" value="${s.rpe}" placeholder="${ph&&ph.rpe?fmt(+ph.rpe):'–'}"></div>
     </div>
-    ${(s.w&&s.r)?`<div class="e1rm">推定1RM <b>${fmt(e)}kg</b>${s.rpe?` ・ あと${fmt(10-clampRpe(+s.rpe))}回`:` ・ RPE未入力`}</div>`:``}`;
+    ${(s.w&&s.r&&s.rpe!=="")?`<div class="e1rm">推定1RM <b>${fmt(e)}kg</b> ・ あと${fmt(10-clampRpe(+s.rpe))}回</div>`:``}`;
   });
   const coach=coachFor(en);
   return `<div class="card" data-card="${ei}">
@@ -420,21 +419,24 @@ function cardHTML(en,ei){
 }
 
 function coachFor(en){
-  let idx=-1;for(let i=en.sets.length-1;i>=0;i--){if(en.sets[i].w&&en.sets[i].r){idx=i;break;}}
-  if(idx<0)return {html:""};
-  const s=en.sets[idx];const w=+s.w,r=+s.r;const hasRpe=s.rpe!=="";const rpe=hasRpe?+s.rpe:10;
-  const e=e1rm(w,r,rpe);const tR=S.settings.targetReps,tE=S.settings.targetRpe;
+  // 分析対象 = 重量・回数・RPE が揃った最後のセット（RPEなしのアップは無視）
+  let idx=-1;for(let i=en.sets.length-1;i>=0;i--){const s=en.sets[i];if(s.w&&s.r&&s.rpe!==""){idx=i;break;}}
+  const hasAny=en.sets.some(s=>s.w&&s.r);
+  if(idx<0){
+    if(!hasAny)return {html:""};
+    return {html:`<div class="coach"><div class="ttl">COACH ／ RM換算表ベース</div><div class="msg">RPEを入れると、RM換算表をもとに次セットを提案します。<b>ウォームアップのセットはRPE不要</b>（空欄のままでOK）。</div></div>`};
+  }
+  const s=en.sets[idx];const w=+s.w,r=+s.r,rpe=+s.rpe;
+  const e=e1rm(w,r,rpe);const tE=S.settings.targetRpe;
   const recSame=recWeight(e,r,tE);
   let msg="";
-  if(hasRpe){
-    const diff=clampRpe(rpe)-tE;
-    if(Math.abs(diff)<0.6)msg=`今の<b>RPE${fmt(rpe)}</b>は目標どおり。次も<b>${fmt(w)}kg × ${r}回</b>を維持、余裕あれば+${fmt(S.settings.roundTo)}kg。`;
-    else if(diff<0)msg=`<b>RPE${fmt(rpe)}</b>はまだ余裕あり（目標${tE}）。次は<b>${fmt(recSame)}kg × ${r}回</b>が目安。`;
-    else msg=`<b>RPE${fmt(rpe)}</b>は目標(${tE})より高め＝疲労気味。次は<b>${fmt(recSame)}kg × ${r}回</b>に落として質を保ちましょう。`;
-  }else msg=`RPEを入れると提案精度が上がります。目標${tE}なら <b>${fmt(recSame)}kg × ${r}回</b> が目安。`;
-  const ctx={name:en.name,setNo:idx+1,w,r,rpe:hasRpe?rpe:null,e1rm:e,exId:en.exId};
-  return {html:`<div class="coach"><div class="ttl">COACH ／ セット${idx+1}を分析</div><div class="msg">${msg}</div>
-    <div class="acts"><button class="btn-copy" onclick='copyCtx(${jenc(ctx)})'>📋 記録をコピー</button><button class="btn-ai" onclick='askAI(${jenc(ctx)})'>💬 AIに相談</button></div></div>`};
+  const diff=clampRpe(rpe)-tE;
+  if(Math.abs(diff)<0.6)msg=`今の<b>RPE${fmt(rpe)}</b>は目標どおり。次も<b>${fmt(w)}kg × ${r}回</b>を維持、余裕あれば+${fmt(S.settings.roundTo)}kg。`;
+  else if(diff<0)msg=`<b>RPE${fmt(rpe)}</b>はまだ余裕あり（目標${tE}）。次は<b>${fmt(recSame)}kg × ${r}回</b>が目安。`;
+  else msg=`<b>RPE${fmt(rpe)}</b>は目標(${tE})より高め＝疲労気味。次は<b>${fmt(recSame)}kg × ${r}回</b>に落として質を保ちましょう。`;
+  const ctx={name:en.name,setNo:idx+1,w,r,rpe,e1rm:e,exId:en.exId};
+  return {html:`<div class="coach"><div class="ttl">COACH ／ RM換算表ベース（推定1RM ${fmt(e)}kg）</div><div class="msg">${msg}</div>
+    <div class="acts"><button class="btn-copy" style="flex:1" onclick='copyCtx(${jenc(ctx)})'>📋 記録をコピー（AIアプリに貼って相談）</button></div></div>`};
 }
 
 /* premise + context */
@@ -448,7 +450,6 @@ function ctxText(c){
 }
 function copyCtx(c){const t=ctxText(c);const done=()=>toast("記録をコピーしました");if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>fallbackCopy(t,done));else fallbackCopy(t,done);}
 function fallbackCopy(t,cb){const ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");cb();}catch(e){toast("コピー失敗");}document.body.removeChild(ta);}
-function askAI(c){openChat();setTimeout(()=>{if(chatInput){chatInput.value=ctxText(c);autoGrow(chatInput);chatInput.focus();}},300);}
 
 function copyPrev(ei){
   const en=getDay()[ei];const last=lastEntry(en.exId);if(!last)return;
@@ -485,15 +486,26 @@ function closeKeypad(silent){
 function renderKeypad(){
   const en=getDay()[kp.ei];
   document.getElementById("kpLbl").textContent=(en?en.name+" ・ セット"+(kp.si+1)+" ・ ":"")+fLabel(kp.f);
-  document.getElementById("kpVal").innerHTML=(kp.value||'<small>未入力</small>');
+  document.getElementById("kpVal").innerHTML=(kp.value!==""?kp.value:'<small>未入力</small>');
   const last=en?lastEntry(en.exId):null;const pv=last&&last.entry.sets[kp.si]?last.entry.sets[kp.si][kp.f]:"";
-  document.getElementById("kpQuick").innerHTML=
-    `<button class="op" onclick="kpStep(-1)">－${fmt(fStep(kp.f))}</button>`+
-    (pv?`<button class="prev" onclick="kpSet('${pv}')">前回 ${fmt(+pv)}</button>`:`<button style="opacity:.4" disabled>前回 –</button>`)+
-    `<button class="op" onclick="kpStep(1)">＋${fmt(fStep(kp.f))}</button>`;
-  const keys=['7','8','9','4','5','6','1','2','3','.','0','⌫'];
-  document.getElementById("kpGrid").innerHTML=keys.map(k=>`<button onclick="kpKey('${k}')">${k}</button>`).join("");
+  const grid=document.getElementById("kpGrid");
+  if(kp.f==="rpe"){
+    // RPE は意味のある6〜10のみ。アップ等はクリア(なし)で空欄に。
+    document.getElementById("kpQuick").innerHTML=
+      `<button onclick="kpClear()">なし（アップ等）</button>`+
+      (pv?`<button class="prev" onclick="kpSet('${pv}')">前回 ${fmt(+pv)}</button>`:`<button style="opacity:.4" disabled>前回 –</button>`);
+    const rpes=[6,6.5,7,7.5,8,8.5,9,9.5,10];
+    grid.innerHTML=rpes.map(v=>`<button class="${(+kp.value)===v?'op':''}" onclick="kpSet('${v}')">${v}</button>`).join("");
+  }else{
+    document.getElementById("kpQuick").innerHTML=
+      `<button class="op" onclick="kpStep(-1)">－${fmt(fStep(kp.f))}</button>`+
+      (pv?`<button class="prev" onclick="kpSet('${pv}')">前回 ${fmt(+pv)}</button>`:`<button style="opacity:.4" disabled>前回 –</button>`)+
+      `<button class="op" onclick="kpStep(1)">＋${fmt(fStep(kp.f))}</button>`;
+    const keys=['7','8','9','4','5','6','1','2','3','.','0','⌫'];
+    grid.innerHTML=keys.map(k=>`<button onclick="kpKey('${k}')">${k}</button>`).join("");
+  }
 }
+function kpClear(){if(!kp)return;kp.value="";kp.fresh=false;commitKp();renderKeypad();}
 function commitKp(){if(!kp)return;getDay()[kp.ei].sets[kp.si][kp.f]=kp.value;if(kp.el)kp.el.value=kp.value;saveStore();document.getElementById("kpVal").innerHTML=(kp.value||'<small>未入力</small>');}
 function kpKey(k){
   if(!kp)return;
@@ -502,7 +514,7 @@ function kpKey(k){
   else{if(kp.fresh){kp.value="";kp.fresh=false;}kp.value+=k;}
   commitKp();
 }
-function kpSet(v){kp.value=String(v);kp.fresh=false;commitKp();}
+function kpSet(v){kp.value=String(v);kp.fresh=false;commitKp();renderKeypad();}
 function kpStep(dir){let v=parseFloat(kp.value||(kp.el?kp.el.placeholder:"")||"0");if(isNaN(v))v=0;v+=dir*fStep(kp.f);if(v<0)v=0;v=Math.round(v*100)/100;kp.value=fmt(v);kp.fresh=false;commitKp();}
 document.getElementById("kpDone").onclick=()=>closeKeypad();
 
@@ -636,11 +648,8 @@ function openSettings(){
   <div class="field"><label>目標レップ数</label><select id="seReps">${[1,2,3,4,5,6,8,10,12].map(v=>`<option ${v===st.targetReps?'selected':''}>${v}</option>`).join("")}</select></div>
   <div class="field"><label>重量の丸め単位 (kg)</label><select id="seRound">${[0.5,1,1.25,2.5,5].map(v=>`<option ${v===st.roundTo?'selected':''}>${v}</option>`).join("")}</select></div>
   <div style="border-top:1px solid var(--line);margin:6px 0 16px"></div>
-  <div class="keynote">アプリ内ライブチャットは <span class="lk">Anthropic APIキー</span> でのみ動作（OpenAI/GeminiはCORSのためサーバー無しでは不可）。キーはこの端末のみに保存。<br>※どのAIでも「📋記録をコピー」で貼り付けて相談できます。</div>
-  <div class="field"><label>Anthropic APIキー（任意）</label><input id="seKey" type="password" placeholder="sk-ant-..." value="${esc(st.apiKey||'')}"><div style="font-size:11px;color:${st.apiKey?'var(--abs)':'var(--dim2)'};font-weight:700;margin-top:6px">${st.apiKey?'● この端末にキーを保存済み':'○ キー未保存'}</div></div>
-  <div class="field"><label>モデル</label><input id="seModel" value="${esc(st.model||'claude-sonnet-4-6')}"></div>
-  <button class="primary" id="seSave">保存</button>
-  ${st.apiKey?'<button class="ghost" id="seDel" style="color:var(--danger);border-color:rgba(255,82,71,.35)">🗑 保存済みキーを削除</button>':''}`;
+  <div class="keynote">AIへの相談は、各種目の <span class="lk">「📋記録をコピー」</span> で記録・前回データ・あなたの目標をまとめてコピーし、Claude / ChatGPT / Gemini などお使いのアプリに貼り付けてください。アプリ内のAPI連携は使いません（追加課金なし）。</div>
+  <button class="primary" id="seSave">保存</button>`;
   openSheet("設定",h);
   let g=st.goal,lv=st.level;
   sheetBody.querySelectorAll("#seGoal button").forEach(b=>b.onclick=()=>{g=b.dataset.v;sheetBody.querySelectorAll("#seGoal button").forEach(x=>x.classList.toggle("on",x.dataset.v===g));});
@@ -648,43 +657,8 @@ function openSettings(){
   document.getElementById("seSave").onclick=()=>{
     st.goal=g;st.level=lv;st.profileNotes=document.getElementById("seNotes").value.trim();
     st.targetRpe=parseFloat(document.getElementById("seRpe").value);st.targetReps=parseInt(document.getElementById("seReps").value);st.roundTo=parseFloat(document.getElementById("seRound").value);
-    st.apiKey=document.getElementById("seKey").value.trim();st.model=document.getElementById("seModel").value.trim()||"claude-sonnet-4-6";
     saveStore();closeSheet();render();toast("設定を保存しました");
   };
-  const del=document.getElementById("seDel");
-  if(del)del.onclick=()=>openConfirm("APIキーを削除","この端末に保存したAnthropic APIキーを削除します。記録は残ります。",()=>{st.apiKey="";saveStore();closeSheet();toast("APIキーを削除しました");});
-}
-
-/* ---------- AI chat ---------- */
-let chatHistory=[];let chatInput;
-function baseSys(){return "あなたは経験豊富なウェイトトレーニングのパーソナルコーチです。RPE（RPE10=限界/残り0回、RPE9=残り1回、RPE8=残り2回、RPE7=残り3回）と推定1RM、利用者プロフィールを踏まえ、次セットの具体的な重量(kg)と回数を提案します。漸進性過負荷・当日の疲労・フォーム維持・オーバートレーニング回避を考慮し、簡潔（3〜5文・箇条書き可）で実践的に。医療判断は避ける。\n【利用者プロフィール】"+premiseLine();}
-function openChat(){
-  openSheet("AIコーチ",`<div class="chat"><div class="chat-top"><div class="goal">前提 <b>${esc(S.settings.goal)}</b>・${esc(S.settings.level)}</div><button class="nw" onclick="newChat()">🆕 新しい相談</button></div><div class="chat-msgs" id="chatMsgs"></div><div class="chat-in"><textarea id="chatInput" rows="1" placeholder="例: 100kg5回RPE8でした。次は？"></textarea><button id="chatSend">↑</button></div></div>`);
-  chatInput=document.getElementById("chatInput");chatInput.addEventListener("input",()=>autoGrow(chatInput));document.getElementById("chatSend").onclick=sendChat;renderChat();
-}
-document.getElementById("btnChat").onclick=openChat;
-function newChat(){chatHistory=[];renderChat();toast("相談をリセットしました");}
-function autoGrow(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px";}
-function renderChat(){
-  const box=document.getElementById("chatMsgs");if(!box)return;let h="";
-  if(!S.settings.apiKey)h+=`<div class="keynote">アプリ内チャットには設定でAPIキーが必要です。無くても質問を入力→各種目の<b>「📋記録をコピー」</b>でClaude/ChatGPT/Geminiに貼って相談できます。前提（目標・レベル）も自動で文章に含まれます。</div>`;
-  if(chatHistory.length===0)h+=`<div class="bub a">こんにちは。各種目の<b>「💬AIに相談」</b>を押すと、その記録と前回データ・あなたの目標が自動入力されます。毎回説明しなくてOKです。</div>`;
-  chatHistory.forEach(m=>{h+=`<div class="bub ${m.role==='user'?'u':'a'}">${esc(m.content)}</div>`;});
-  if(window._chatBusy)h+=`<div class="bub a"><span class="typing"><i></i><i></i><i></i></span></div>`;
-  box.innerHTML=h;box.scrollTop=box.scrollHeight;
-}
-async function sendChat(){
-  const txt=chatInput.value.trim();if(!txt||window._chatBusy)return;
-  if(!S.settings.apiKey){toast("設定でAPIキーを入力するか、コピーをご利用ください");return;}
-  chatHistory.push({role:"user",content:txt});chatInput.value="";autoGrow(chatInput);window._chatBusy=true;renderChat();
-  try{
-    const msgs=chatHistory.slice(-10).map(m=>({role:m.role,content:m.content}));
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":S.settings.apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:S.settings.model||"claude-sonnet-4-6",max_tokens:1024,system:baseSys(),messages:msgs})});
-    if(!res.ok){let det="";try{const ej=await res.json();det=ej.error&&ej.error.message?ej.error.message:"";}catch(e){}throw new Error("API "+res.status+(det?"："+det:""));}
-    const data=await res.json();const out=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim()||"(応答が空でした)";
-    chatHistory.push({role:"assistant",content:out});
-  }catch(err){chatHistory.push({role:"assistant",content:"⚠️ エラー: "+err.message+"\n（キー・モデル名・通信環境をご確認ください。GitHub Pages以外やキー未設定では動作しません）"});}
-  window._chatBusy=false;renderChat();
 }
 
 /* ---------- utils ---------- */
